@@ -1,0 +1,27 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t dmayer2/react-test -f ./client/Dockerfile.dev ./client
+
+scripts:
+  - docker run -e CI=true USERNAME/react-test npm test
+
+after_success:
+  - docker build -t dmayer2/multi-client ./client
+  - docker build -t dmayer2/multi-nginx ./nginx
+  - docker build -t dmayer2/multi-server ./server
+  - docker build -t dmayer2/multi-worker ./worker
+  # log in to the docker CLI --> variables on Travis
+  - echo "$DOCKER_PASSWORD" | docker login -u "DOCKER_ID" --password-stdin
+  # take those images and push them to docker hub
+  - docker push dmayer2/multi-client
+  - docker push dmayer2/multi-nginx
+  - docker push dmayer2/multi-server
+  - docker push dmayer2/multi-worker
+
+
+
+
+language: generic 
